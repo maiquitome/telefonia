@@ -1,18 +1,11 @@
 defmodule Telefonia do
-  @moduledoc """
-  Documentation for `Telefonia`.
-  """
+  @moduledoc false
 
-  @doc """
-  Hello world.
+  def cadastrar_assinante(nome, numero, cpf, plano) do
+    Assinante.cadastrar(nome, numero, cpf, plano)
+  end
 
-  ## Examples
-
-      iex> Telefonia.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def remover_assinante(numero) do
+    Assinante.remover(numero)
   end
 end
