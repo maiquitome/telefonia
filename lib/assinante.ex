@@ -1,10 +1,43 @@
 defmodule Assinante do
-  @moduledoc false
+  @moduledoc """
+  Módulo para cadastro de assinantes `prepago` e `pospago`.
+
+  A função mais utilizada é a função `cadastrar/4`
+  """
 
   defstruct nome: nil, numero: nil, cpf: nil, plano: nil
 
   @assinantes %{prepago: "pre.txt", pospago: "pos.txt"}
 
+  @doc """
+  Cadastra um assinante `prepago` ou `pospago`
+
+  ## Parametros
+
+  - nome: Nome completo da pessoa que está assinando o plano.
+  - numero: Número único.
+  - cpf: CPF da pessoa que está assinando o plano.
+  - plano: Opcional -> prepago ou pospago. Caso não seje informado o default é prepago.
+
+  ## Exemplos
+
+      iex> Assinante.cadastrar("Maiqui Tomé", "99339944", "12345678911")
+      {:ok, "Assinante Maiqui Tomé cadastrado(a) com sucesso."}
+
+      iex> Assinante.cadastrar("Mike Wazowski", "12312331", "12345678911", :pospago)
+      {:ok, "Assinante Mike Wazowski cadastrado(a) com sucesso."}
+
+      iex> Assinante.cadastrar("Mike Wazowski", "12312331", "12345678911", :outro)
+      {:error, "Plano `:outro` desconhecido. Informe :prepago ou :pospago."}
+
+  """
+  @spec cadastrar(
+          nome :: String.t(),
+          numero :: String.t(),
+          cpf :: String.t(),
+          plano :: atom()
+        ) ::
+          {:ok, String.t()} | {:error, String.t()}
   def cadastrar(nome, numero, cpf, plano \\ :prepago)
       when is_binary(nome)
       when is_binary(numero)
@@ -13,12 +46,14 @@ defmodule Assinante do
     if existe_assinante?(numero) do
       {:error, "Já existe um assinante com este número."}
     else
-      todos_e_novo_assinante =
-        read(plano) ++
-          [%Assinante{nome: nome, numero: numero, cpf: cpf, plano: plano}]
+      with assinantes = [] <- read(plano) do
+        todos_e_mais_o_novo_assinante =
+          assinantes ++
+            [%Assinante{nome: nome, numero: numero, cpf: cpf, plano: plano}]
 
-      write(todos_e_novo_assinante, plano)
-      {:ok, "Assinante #{nome} cadastrado(a) com sucesso."}
+        write(todos_e_mais_o_novo_assinante, plano)
+        {:ok, "Assinante #{nome} cadastrado(a) com sucesso."}
+      end
     end
   end
 
@@ -68,7 +103,7 @@ defmodule Assinante do
 
   defp read(plano) when is_atom(plano) do
     if plano != :pospago and plano != :prepago do
-      {:error, "Plano desconhecido. Informe :prepago ou :pospago."}
+      {:error, "Plano `:#{plano}` desconhecido. Informe :prepago ou :pospago."}
     else
       case File.read(@assinantes[plano]) do
         {:error, :enoent} -> []
