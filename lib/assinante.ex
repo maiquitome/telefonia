@@ -5,7 +5,7 @@ defmodule Assinante do
   A função mais utilizada é a função `cadastrar/4`
   """
 
-  defstruct nome: nil, numero: nil, cpf: nil, plano: nil, chamadas: []
+  defstruct nome: nil, numero: nil, cpf: nil, plano: nil
 
   @assinantes %{prepago: "pre.txt", pospago: "pos.txt"}
 
