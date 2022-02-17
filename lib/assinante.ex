@@ -71,6 +71,39 @@ defmodule Assinante do
     end
   end
 
+  @doc """
+  ## Examples
+
+      iex> Assinante.cadastrar("Mike Candy", "3355446677", "12345678911", :prepago)
+      {:ok, "Assinante Mike Candy cadastrado(a) com sucesso."}
+
+      iex> Assinante.atualizar "3355446677", %Assinante{
+      ...>  chamadas: [%Chamada{data: ~U[2022-02-16 23:46:42.608107Z], duracao: 3}],
+      ...>  cpf: "12345678911",
+      ...>  nome: "Mike Candy",
+      ...>  numero: "3355446677",
+      ...>  plano: %Prepago{creditos: 10, recargas: []}
+      ...>}
+      {:ok, "Usuário Mike Candy atualizado com sucesso."}
+
+  """
+  def atualizar(numero, assinante_atualizado) do
+    assinantes =
+      Enum.map(assinantes(), fn assinante ->
+        if assinante.numero == numero, do: assinante_atualizado
+      end)
+
+    case assinante_atualizado.plano.__struct__ do
+      Prepago ->
+        write(assinantes, pega_plano(assinante_atualizado))
+        {:ok, "Usuário #{assinante_atualizado.nome} atualizado com sucesso."}
+
+      Pospago ->
+        write(assinantes, pega_plano(assinante_atualizado))
+        {:ok, "Usuário #{assinante_atualizado.nome} atualizado com sucesso."}
+    end
+  end
+
   def remover(numero) do
     with {:ok, assinante = %Assinante{}} <- buscar_assinante(numero) do
       case assinante.plano.__struct__ do
