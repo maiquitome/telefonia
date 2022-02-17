@@ -13,9 +13,14 @@ defmodule AssinanteTest do
     nome = "Teste"
     numero = "123"
     cpf = "123"
-    plano = :prepago
+    plano = %Prepago{}
 
-    expected_response = %Assinante{cpf: "123", nome: "Teste", numero: "123", plano: :prepago}
+    expected_response = %Assinante{
+      cpf: "123",
+      nome: "Teste",
+      numero: "123",
+      plano: %Prepago{}
+    }
 
     response = %Assinante{cpf: cpf, nome: nome, numero: numero, plano: plano}
 
@@ -27,8 +32,9 @@ defmodule AssinanteTest do
       nome = "Teste"
       numero = "123"
       cpf = "123"
+      plano = :prepago
 
-      response = Assinante.cadastrar(nome, numero, cpf)
+      response = Assinante.cadastrar(nome, numero, cpf, plano)
 
       expected_response = {:ok, "Assinante Teste cadastrado(a) com sucesso."}
 
@@ -39,9 +45,10 @@ defmodule AssinanteTest do
       nome = "Teste"
       numero = "123"
       cpf = "123"
+      plano = :prepago
 
-      {:ok, _mensagem} = Assinante.cadastrar(nome, numero, cpf)
-      response = Assinante.cadastrar(nome, numero, cpf)
+      {:ok, _mensagem} = Assinante.cadastrar(nome, numero, cpf, plano)
+      response = Assinante.cadastrar(nome, numero, cpf, plano)
 
       expected_response = {:error, "Já existe um assinante com este número."}
 
@@ -54,13 +61,20 @@ defmodule AssinanteTest do
       nome = "Teste"
       numero = "123"
       cpf = "123"
+      plano = :prepago
 
-      {:ok, _mensagem} = Assinante.cadastrar(nome, numero, cpf)
+      {:ok, _mensagem} = Assinante.cadastrar(nome, numero, cpf, plano)
 
       response = Assinante.buscar_assinante(numero)
 
       expected_response =
-        {:ok, %Assinante{cpf: "123", nome: "Teste", numero: "123", plano: :prepago}}
+        {:ok,
+         %Assinante{
+           cpf: "123",
+           nome: "Teste",
+           numero: "123",
+           plano: %Prepago{}
+         }}
 
       assert response == expected_response
     end
@@ -71,13 +85,20 @@ defmodule AssinanteTest do
       nome = "Teste"
       numero = "123"
       cpf = "123"
+      plano = :prepago
 
-      {:ok, _mensagem} = Assinante.cadastrar(nome, numero, cpf)
+      {:ok, _mensagem} = Assinante.cadastrar(nome, numero, cpf, plano)
 
       response = Assinante.buscar_assinante(numero, :all)
 
       expected_response =
-        {:ok, %Assinante{cpf: "123", nome: "Teste", numero: "123", plano: :prepago}}
+        {:ok,
+         %Assinante{
+           cpf: "123",
+           nome: "Teste",
+           numero: "123",
+           plano: %Prepago{}
+         }}
 
       assert response == expected_response
     end
@@ -92,7 +113,13 @@ defmodule AssinanteTest do
       response = Assinante.buscar_assinante(numero, :prepago)
 
       expected_response =
-        {:ok, %Assinante{cpf: "123", nome: "Teste", numero: "123", plano: :prepago}}
+        {:ok,
+         %Assinante{
+           cpf: "123",
+           nome: "Teste",
+           numero: "123",
+           plano: %Prepago{}
+         }}
 
       assert response == expected_response
     end
@@ -101,13 +128,20 @@ defmodule AssinanteTest do
       nome = "Teste"
       numero = "123"
       cpf = "123"
+      plano = :pospago
 
-      {:ok, _mensagem} = Assinante.cadastrar(nome, numero, cpf, :pospago)
+      {:ok, _mensagem} = Assinante.cadastrar(nome, numero, cpf, plano)
 
       response = Assinante.buscar_assinante(numero, :pospago)
 
       expected_response =
-        {:ok, %Assinante{cpf: "123", nome: "Teste", numero: "123", plano: :pospago}}
+        {:ok,
+         %Assinante{
+           cpf: "123",
+           nome: "Teste",
+           numero: "123",
+           plano: %Pospago{}
+         }}
 
       assert response == expected_response
     end
@@ -118,8 +152,9 @@ defmodule AssinanteTest do
       nome = "Teste"
       numero = "123"
       cpf = "123"
+      plano = :pospago
 
-      {:ok, _mensagem} = Assinante.cadastrar(nome, numero, cpf, :pospago)
+      {:ok, _mensagem} = Assinante.cadastrar(nome, numero, cpf, plano)
 
       expected_response = {:ok, "Usuário Teste removido com sucesso."}
 
@@ -132,8 +167,9 @@ defmodule AssinanteTest do
       nome = "Teste"
       numero = "123"
       cpf = "123"
+      plano = :prepago
 
-      {:ok, _mensagem} = Assinante.cadastrar(nome, numero, cpf, :prepago)
+      {:ok, _mensagem} = Assinante.cadastrar(nome, numero, cpf, plano)
 
       expected_response = {:ok, "Usuário Teste removido com sucesso."}
 
