@@ -17,11 +17,11 @@ defmodule Assinante do
   - nome: Nome completo da pessoa que está assinando o plano.
   - numero: Número único.
   - cpf: CPF da pessoa que está assinando o plano.
-  - plano: Opcional -> prepago ou pospago. Caso não seje informado o default é prepago.
+  - plano: prepago ou pospago.
 
   ## Exemplos
 
-      iex> Assinante.cadastrar("Maiqui Tomé", "99339944", "12345678911")
+      iex> Assinante.cadastrar("Maiqui Tomé", "99339944", "12345678911", :prepago)
       {:ok, "Assinante Maiqui Tomé cadastrado(a) com sucesso."}
 
       iex> Assinante.cadastrar("Mike Wazowski", "12312331", "12345678911", :pospago)
@@ -38,34 +38,81 @@ defmodule Assinante do
           plano :: atom()
         ) ::
           {:ok, String.t()} | {:error, String.t()}
-  def cadastrar(nome, numero, cpf, plano \\ :prepago)
-      when is_binary(nome)
-      when is_binary(numero)
-      when is_binary(cpf)
-      when is_atom(plano) do
+  def cadastrar(nome, numero, cpf, :prepago) do
+    inserir_novo(nome, numero, cpf, %Prepago{})
+  end
+
+  def cadastrar(nome, numero, cpf, :pospago) do
+    inserir_novo(nome, numero, cpf, %Pospago{})
+  end
+
+  def cadastrar(_nome, _numero, _cpf, plano) do
+    {:error, "Plano `:#{plano}` desconhecido. Informe :prepago ou :pospago."}
+  end
+
+  defp inserir_novo(nome, numero, cpf, plano)
+       when is_binary(nome)
+       when is_binary(numero)
+       when is_binary(cpf)
+       when is_atom(plano) do
     if existe_assinante?(numero) do
       {:error, "Já existe um assinante com este número."}
     else
-      with assinantes = [] <- read(plano) do
-        todos_e_mais_o_novo_assinante =
-          assinantes ++
-            [%Assinante{nome: nome, numero: numero, cpf: cpf, plano: plano}]
+      assinante = %Assinante{nome: nome, numero: numero, cpf: cpf, plano: plano}
 
-        write(todos_e_mais_o_novo_assinante, plano)
+      plano_atom = pega_plano(assinante)
+
+      with assinantes = [] <- read(plano_atom) do
+        todos_e_mais_o_novo_assinante = assinantes ++ [assinante]
+
+        write(todos_e_mais_o_novo_assinante, plano_atom)
         {:ok, "Assinante #{nome} cadastrado(a) com sucesso."}
       end
     end
   end
 
+  @doc """
+  ## Examples
+
+      iex> Assinante.cadastrar("Mike Candy", "3355446677", "12345678911", :prepago)
+      {:ok, "Assinante Mike Candy cadastrado(a) com sucesso."}
+
+      iex> Assinante.atualizar "3355446677", %Assinante{
+      ...>  chamadas: [%Chamada{data: ~U[2022-02-16 23:46:42.608107Z], duracao: 3}],
+      ...>  cpf: "12345678911",
+      ...>  nome: "Mike Candy",
+      ...>  numero: "3355446677",
+      ...>  plano: %Prepago{creditos: 10, recargas: []}
+      ...>}
+      {:ok, "Usuário Mike Candy atualizado com sucesso."}
+
+  """
+  def atualizar(numero, assinante_atualizado) do
+    assinantes =
+      Enum.map(assinantes(), fn assinante ->
+        if assinante.numero == numero, do: assinante_atualizado
+      end)
+
+    case assinante_atualizado.plano.__struct__ do
+      Prepago ->
+        write(assinantes, pega_plano(assinante_atualizado))
+        {:ok, "Usuário #{assinante_atualizado.nome} atualizado com sucesso."}
+
+      Pospago ->
+        write(assinantes, pega_plano(assinante_atualizado))
+        {:ok, "Usuário #{assinante_atualizado.nome} atualizado com sucesso."}
+    end
+  end
+
   def remover(numero) do
     with {:ok, assinante = %Assinante{}} <- buscar_assinante(numero) do
-      case assinante.plano do
-        :prepago ->
-          write(assinantes_prepago() -- [assinante], assinante.plano)
+      case assinante.plano.__struct__ do
+        Prepago ->
+          write(assinantes_prepago() -- [assinante], pega_plano(assinante))
           {:ok, "Usuário #{assinante.nome} removido com sucesso."}
 
-        :pospago ->
-          write(assinantes_pospago() -- [assinante], assinante.plano)
+        Pospago ->
+          write(assinantes_pospago() -- [assinante], pega_plano(assinante))
           {:ok, "Usuário #{assinante.nome} removido com sucesso."}
       end
     end
@@ -79,6 +126,13 @@ defmodule Assinante do
     case buscar(numero, key) do
       nil -> {:error, "User not found."}
       assinante -> {:ok, assinante}
+    end
+  end
+
+  defp pega_plano(assinante) when is_struct(assinante) do
+    case assinante.plano.__struct__ do
+      Prepago -> :prepago
+      Pospago -> :pospago
     end
   end
 
